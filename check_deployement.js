@@ -62,9 +62,9 @@ console.log("Inside TCP1");
   // Establish a connection to the database
   return await mysql.createPool({
     user: 'root', // e.g. 'my-db-user'
-    password: 'root', // e.g. 'my-db-password'
-    database: 'banking',
-    host: '35.236.69.164', //dbSocketAddr[0], // e.g. '127.0.0.1'
+    password: 'test123', // e.g. 'my-db-password'
+    database: 'user_info',
+    host: '127.0.0.1', //dbSocketAddr[0], // e.g. '127.0.0.1'
     port: '3306', //dbSocketAddr[1], // e.g. '3306'
     // ... Specify additional properties here.
     ...config,
@@ -124,7 +124,7 @@ const createPool = async () => {
   //if (process.env.DB_HOST) {
 //    return await createTcpPool(config);
   //} else {
-    return await createUnixSocketPool(config);
+    return await createTcpPool(config);
   //}
 };
 
@@ -159,12 +159,12 @@ app.use(async (req, res, next) => {
 });
 
 
-app.post('/accounts/user', async (req, res) =>  {
+app.post('/', async (req, res) =>  {
 const postObj=req.body
 const userID=postObj.userID
 
   try {
-    const tabsQuery = pool.query("select * from accounts where userID=?;",[userID]);
+    const tabsQuery = pool.query("select * from user_data;");
         let x = await tabsQuery;
 res.json(x);
 } catch (err) {
@@ -176,211 +176,6 @@ res.json(x);
       )
       .end();
   }
-});
-
-app.post('/users/roles', async (req, res) =>  {
-const postObj=req.body
-const userID=postObj.userID
-
-  try {
-    const tabsQuery = pool.query("select Role from users where userID=?;",[userID]);
-        let x = await tabsQuery;
-res.json(x);
-} catch (err) {
-        console.error(err);
-    res
-      .status(500)
-      .send(
-        'Unable to load page. Please check the application logs for more details.'
-      )
-      .end();
-  }
-});
-
-app.post('/users/payee/new', async (req, res) =>  {
-  const timestamp = new Date();
-const postObj=req.body
-const userID=postObj.userID
-const payeeName=postObj.payeeName
-const accountNum=postObj.accountNum
-const accountType=postObj.accountType
-  try {
-    const stmt = 'INSERT INTO banking.payee (userID,payeeName,accountNum,accountType) values (?,?,?,?)';
-    await pool.query(stmt,[userID,payeeName,accountNum,accountType]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully create accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully inserted records').end();
-});
-
-app.post('/users/payee', async (req, res) =>  {
-const postObj=req.body
-const userID = postObj.userID
-  try {
-    const tabsQuery = pool.query("SELECT payeeName FROM banking.payee where userID=?;",[userID]);
-        let x = await tabsQuery;
-res.json(x);
-} catch (err) {
-        console.error(err);
-    res
-      .status(500)
-      .send(
-        'Unable to load page. Please check the application logs for more details.'
-      )
-      .end();
-  }
-});
-
-app.delete('/users/payee/existing',async (req, res) => {
-const postObj=req.body
-const accountNum=postObj.accountNum
-  try {
-const stmt = 'delete from banking.payee where accountNum=?';
-    await pool.query(stmt,[accountNum]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully delete accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully deleted records').end();
-});
-
-app.get('/check', (req, res) => {
-  res.send('Hello World!')
-});
-
-app.post('/accounts', async (req, res) =>  {
-const postObj=req.body
-console.log("postObj")
-console.log(postObj)
-//const accountNum=995783922 
-const accountNum = postObj.accountNum
-  try {
-    const tabsQuery = pool.query("SELECT * FROM banking.accounts where accountNum=?;",[accountNum]);
-        let x = await tabsQuery;
-res.json(x);
-} catch (err) {
-        console.error(err);
-    res
-      .status(500)
-      .send(
-        'Unable to load page. Please check the application logs for more details.'
-      )
-      .end();
-  }
-});
-
-app.post('/accounts/new', async (req, res) =>  {
-  const timestamp = new Date();
-const postObj=req.body
-const userID=postObj.userID
-const accountType=postObj.accountType
-  try {
-    const stmt = 'INSERT INTO banking.accounts (userID,totalBalance,availableBalance,accountType,accountStatus) values (?,0.0,0.0,?,"active")';
-    await pool.query(stmt,[userID,accountType]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully create accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully inserted records').end();
-});
-app.put('/accounts/balance',async (req, res) => {
-const postObj=req.body
-const accountNum=postObj.accountNum
-const balanceType=postObj.balanceType
-const balanceAmount=postObj.balanceAmount
-let stmt = ""
-  try {
-console.log("start");
-if(balanceType=="totalBalance"){
-console.log("if");
- stmt = 'update banking.accounts set totalBalance=? where accountNum=?';
-}
-else{
-console.log("else");
-stmt = 'update banking.accounts set availableBalance=? where accountNum=?';
-}
-    await pool.query(stmt,[balanceAmount,accountNum]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully update accounts balance amount! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully updated records').end();
-});
-
-app.delete('/accounts/existing',async (req, res) => {
-const postObj=req.body
-const accountNum=postObj.accountNum
-  try {
-const stmt = 'delete from banking.accounts where accountNum=?';
-    await pool.query(stmt,[accountNum]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully delete accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully deleted records').end();
-});
-//app.put('/accounts/email',async (req, res) => {
-//const postObj=req.body
-//const email=postObj.email
-//const userID=postObj.userID
-//  try {
-//const stmt = 'update banking.users set email=? where userID=?';
-//    await pool.query(stmt,[email,userID]);
-//  } catch (err) {
-//    console.error(err);
-//    return res
-//      .status(500)
-//      .send(
-//        'Unable to successfully update accounts email ID! Please check the application logs for more details.'
-//      )
-//      .end();
-//  }
-//  res.status(200).send('Successfully updated records').end();
-//});
-
-app.put('/accounts/password',async (req, res) => {
-const postObj=req.body
-const password=postObj.password
-const userID=postObj.userID
-  try {
-const stmt = 'update banking.users set password=? where userID=?';
-    await pool.query(stmt,[password,userID]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully update accounts password! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully updated records').end();
 });
 
 const PORT = process.env.PORT || 8080;
