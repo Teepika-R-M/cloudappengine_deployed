@@ -2,37 +2,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <YOUR-DEPLOYMENT-NAME>
+  name: kubernetes_cloud_sql
 spec:
   selector:
     matchLabels:
-      app: <YOUR-APPLICATION-NAME>
+      app: smart_recipe
   template:
     metadata:
       labels:
-        app: <YOUR-APPLICATION-NAME>
+        app: smart_recipe
     spec:
-      serviceAccountName: <YOUR-KSA-NAME>
+      serviceAccountName: cluster-ksa
       # [END cloud_sql_proxy_k8s_sa]
       # [START cloud_sql_proxy_k8s_secrets]
       containers:
-      - name: <YOUR-APPLICATION-NAME>
+      - name: smart_recipe
+        image: gcr.io/master-project-319819/cloud_sql_conk
+        ports:
+        - containerPort: 8080
         # ... other container configuration
         env:
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: <YOUR-DB-SECRET>
+              name: cloud-sql-secret
               key: username
         - name: DB_PASS
           valueFrom:
             secretKeyRef:
-              name: <YOUR-DB-SECRET>
+              name: cloud-sql-secret
               key: password
         - name: DB_NAME
           valueFrom:
             secretKeyRef:
-              name: <YOUR-DB-SECRET>
+              name: cloud-sql-secret
               key: database
       # [END cloud_sql_proxy_k8s_secrets]
       # [START cloud_sql_proxy_k8s_container]
