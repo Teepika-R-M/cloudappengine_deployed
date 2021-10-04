@@ -6,17 +6,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: smart_recipe
+      app: smartrecipe
   template:
     metadata:
       labels:
-        app: smart_recipe
+        app: smartrecipe
     spec:
       serviceAccountName: cluster-ksa
       # [END cloud_sql_proxy_k8s_sa]
       # [START cloud_sql_proxy_k8s_secrets]
       containers:
-      - name: smart_recipe
+      - name: smartrecipe
         image: gcr.io/master-project-319819/cloud_sql_conk
         ports:
         - containerPort: 8080
