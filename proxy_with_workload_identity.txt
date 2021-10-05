@@ -17,7 +17,7 @@ spec:
       # [START cloud_sql_proxy_k8s_secrets]
       containers:
       - name: smartrecipe
-        image: gcr.io/master-project-319819/cloud_sql_conk
+        image: gcr.io/master-project-327403/recipe-mysql-backend
         ports:
         - containerPort: 8080
         # ... other container configuration
